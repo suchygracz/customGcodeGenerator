@@ -1,0 +1,26 @@
+# Box.obj
+# A simple 100mm x 100mm x 100mm cube
+
+o Cube
+
+#
+# object box
+#
+
+# Vertices
+v -50.0 -50.0 -50.0
+v  50.0 -50.0 -50.0
+v  50.0  50.0 -50.0
+v -50.0  50.0 -50.0
+v -50.0 -50.0  50.0
+v  50.0 -50.0  50.0
+v  50.0  50.0  50.0
+v -50.0  50.0  50.0
+
+# Faces
+f 1 2 3 4  # Bottom face
+f 5 6 7 8  # Top face
+f 1 2 6 5  # Front face
+f 2 3 7 6  # Right face
+f 3 4 8 7  # Back face
+f 4 1 5 8  # Left face
