@@ -10,16 +10,16 @@ def any_func(arr, a, b):
 
 
 class Object3D:
-    def __init__(self, render, vertices='', faces='', lines = '', is_line=False):
+    def __init__(self, render, vertices='', lines='', is_line=False):
         self.render = render
         self.vertices = np.array(vertices)
-        self.faces = faces
+        #self.faces = lines
         self.lines = lines
         self.is_line = is_line
         self.translate([0.0001, 0.0001, 0.0001])
 
         self.font = pg.font.SysFont('Arial', 30, bold=True)
-        self.color_faces = [(pg.Color('orange'), face) for face in self.faces]
+        #self.color_faces = [(pg.Color('orange'), face) for face in self.faces]
         self.movement_flag, self.draw_vertices = False, False
         self.label = ''
 
@@ -96,8 +96,8 @@ class Object3D:
         vertices = vertices[:, :2]
 
         if self.is_line:  # Check if this object should be drawn as lines
-            for line in self.faces:  # Faces store line indices in this case
-                pg.draw.line(self.render.screen, pg.Color('white'), vertices[line[0]], vertices[line[1]], 1)
+            for line in self.lines:  # Faces store line indices in this case
+                pg.draw.line(self.render.screen, pg.Color('#4848ed'), vertices[line[0]], vertices[line[1]], 10)
         else:
             for index, color_face in enumerate(self.color_faces):
                 color, face = color_face
@@ -111,7 +111,7 @@ class Object3D:
         if self.draw_vertices:
             for vertex in vertices:
                 if not any_func(vertex, self.render.H_WIDTH, self.render.H_HEIGHT):
-                    pg.draw.circle(self.render.screen, pg.Color('white'), vertex, 2)
+                    pg.draw.circle(self.render.screen, pg.Color('blue'), vertex, 20)
 
     def translate(self, pos):
         self.vertices = self.vertices @ translate(pos)
