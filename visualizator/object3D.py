@@ -1,5 +1,5 @@
 import pygame as pg
-from matrixFunctions import *
+from visualizator.matrixFunctions import *
 import numpy as np
 from numba import njit
 
@@ -12,7 +12,7 @@ def any_func(arr, a, b):
 class Object3D:
     def __init__(self, render, vertices='', lines='', is_line=False):
         self.render = render
-        self.vertices = np.array(vertices)
+        self.vertices = np.array(vertices, dtype=np.float64) if vertices is not None else np.array([], dtype=np.float64)
         #self.faces = lines
         self.lines = lines
         self.is_line = is_line
@@ -26,6 +26,9 @@ class Object3D:
         # Mouse control variables
         self.mouse_rotating = False  # Track whether mouse is rotating
         self.last_mouse_pos = None  # Track the last mouse position
+
+
+
     def draw(self):
         self.screen_projection()
         
@@ -97,7 +100,19 @@ class Object3D:
 
         if self.is_line:  # Check if this object should be drawn as lines
             for line in self.lines:  # Faces store line indices in this case
+                #print(vertices[0])
+                #print(vertices[line[0]])
+                #sleep(1000)
+                #print(line[0])
                 pg.draw.line(self.render.screen, pg.Color('#4848ed'), vertices[line[0]], vertices[line[1]], 10)
+        else:
+            for line in self.lines:  # Faces store line indices in this case
+                # print(vertices[0])
+                # print(vertices[line[0]])
+                # sleep(1000)
+                # print(line[0])
+                pg.draw.line(self.render.screen, pg.Color('#AEAEAE'), vertices[line[0]], vertices[line[1]], 1)
+    """        
         else:
             for index, color_face in enumerate(self.color_faces):
                 color, face = color_face
@@ -112,6 +127,7 @@ class Object3D:
             for vertex in vertices:
                 if not any_func(vertex, self.render.H_WIDTH, self.render.H_HEIGHT):
                     pg.draw.circle(self.render.screen, pg.Color('blue'), vertex, 20)
+    """
 
     def translate(self, pos):
         self.vertices = self.vertices @ translate(pos)
@@ -128,6 +144,95 @@ class Object3D:
     def rotate_z(self, angle):
         self.vertices = self.vertices @ rotate_z(angle)
 
+class Grid(Object3D):
+    def __init__(self,render,vertices='', lines='', is_line=False, size: int = 100, spacing: int = 10):
+        super().__init__(render, vertices, lines, is_line)
+
+        self.size = size
+        self.spacing = spacing
+        self.lines = self.generate_grid_lines()
+
+    def generate_grid_lines(self):
+        # Generate lines on the XY plane spaced by `self.spacing`
+        # This function should return a list of line segments
+        lines = []
+        half_size = self.size / 2
+        current = -half_size
+        while current <= half_size:
+            # Horizontal line from -half_size to +half_size at y=current
+            lines.append(((current, -half_size, 0), (current, half_size, 0)))  # Line coordinates (x, y, z)
+            # Vertical line from -half_size to +half_size at x=current
+            lines.append(((-half_size, current, 0), (half_size, current, 0)))
+            current += self.spacing
+        return lines
+
+    def draw(self):
+        """
+        # Assuming you have some way to draw lines in your visualizer
+        for line in self.lines:
+            # draw_line(start_point, end_point) would be part of your visualizer
+            start, end = line
+            print(f"Drawing line from {start} to {end}")  # Replace with actual drawing logic
+"""
+        self.screen_projection()
+"""
+class Grid(Object3D):
+    def __init__(self, render, size=10, step=1):
+        super().__init__(render)
+        self.size = size
+        self.step = step
+        self.color = pg.Color('grey')
+        self.vertices = self.generate_grid_vertices()
+
+    def generate_grid_vertices(self):
+        vertices = []
+        for x in range(-self.size, self.size + 1, self.step):
+            vertices.append([x, -self.size, 0, 1])
+            vertices.append([x, self.size, 0, 1])
+        for y in range(-self.size, self.size + 1, self.step):
+            vertices.append([-self.size, y, 0, 1])
+            vertices.append([self.size, y, 0, 1])
+        return np.array(vertices)
+
+    def draw(self):
+        self.screen_projection()
+        for i in range(0, len(self.vertices), 2):
+            start_pos = self.vertices[i][:2]
+            end_pos = self.vertices[i + 1][:2]
+            pg.draw.line(self.render.screen, self.color, start_pos, end_pos, 1)
+"""
+'''
+class Grid:
+    def __init__(self, render, size=10, step=1):
+        self.render = render
+        self.size = size
+        self.step = step
+        self.color = pg.Color('grey')
+        self.vertices = self.generate_grid_vertices()
+
+    def generate_grid_vertices(self):
+        vertices = []
+        for x in range(-self.size, self.size + 1, self.step):
+            vertices.append([x, -self.size, 0, 1])
+            vertices.append([x, self.size, 0, 1])
+        for y in range(-self.size, self.size + 1, self.step):
+            vertices.append([-self.size, y, 0, 1])
+            vertices.append([self.size, y, 0, 1])
+        return np.array(vertices)
+
+    def draw(self):
+        vertices = self.vertices @ self.render.camera.camera_matrix()
+        vertices = vertices @ self.render.projection.projection_matrix
+        vertices /= vertices[:, -1].reshape(-1, 1)
+        vertices[(vertices > 2) | (vertices < -2)] = 0
+        vertices = vertices @ self.render.projection.to_screen_matrix
+        vertices = vertices[:, :2]
+
+        for i in range(0, len(vertices), 2):
+            start_pos = vertices[i]
+            end_pos = vertices[i + 1]
+            pg.draw.line(self.render.screen, self.color, start_pos, end_pos, 1)
+'''
 
 class Axes(Object3D):
     def __init__(self, render):
@@ -138,3 +243,39 @@ class Axes(Object3D):
         self.color_faces = [(color, face) for color, face in zip(self.colors, self.faces)]
         self.draw_vertices = False
         self.label = 'XYZ'
+
+def getObjectFromPoints(self, points):
+    vertex = [point + [1] for point in points]  # Convert points to homogeneous coordinates by adding [1]
+    lines = []
+
+    # Create lines by connecting consecutive points
+    for i in range(len(vertex) - 1):
+        lines.append([i, i + 1])  # Line from point i to point i+1
+
+    return Object3D(self, vertex, lines, is_line=True)
+"""
+def getGrid(self, size: int = 10, spacing: int = 1):
+
+    return Grid(self, vertices=[], lines=[], is_line=True, size=size, spacing=spacing)
+    """
+
+def getGrid(self, size: int = 10, spacing: int = 5):
+    vertices = []
+    lines = []
+    half_size = size / 2
+    nOfLines = int(size / spacing)
+
+    # Generate grid vertices and lines
+    for i in range(nOfLines + 1):
+        position = -half_size + i * spacing
+        # Horizontal lines
+        vertices.append([position, -half_size, 0, 1])
+        vertices.append([position, half_size, 0, 1])
+        lines.append([len(vertices) - 2, len(vertices) - 1])
+
+        # Vertical lines
+        vertices.append([-half_size, position, 0, 1])
+        vertices.append([half_size, position, 0, 1])
+        lines.append([len(vertices) - 2, len(vertices) - 1])
+
+    return Object3D(self, vertices, lines, is_line=False)

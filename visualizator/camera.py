@@ -1,5 +1,5 @@
 import pygame as pg
-from matrixFunctions import *
+from visualizator.matrixFunctions import *
 
 class Camera:
     def __init__(self, render, position):

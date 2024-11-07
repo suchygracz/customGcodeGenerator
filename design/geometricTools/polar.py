@@ -1,8 +1,9 @@
 import math
 
+from numpy.ma.core import angle
 from pydantic import BaseModel
 from typing import Optional
-from math import pi,cos,sin
+from math import pi,cos,sin, atan2
 from ..point import Point
 
 class PolarPoint(BaseModel):
@@ -17,17 +18,31 @@ class PolarPoint(BaseModel):
     radious: Optional[float] = None
     angle: Optional[float] = None
 
-def polarToPoint(polar_point: PolarPoint) -> Point:
+def polarToPoint(center: Point, radious: float, angle: float) -> Point:
     """
     Convert polar coordinates to Cartesian coordinates
     Point XY coordinates of a point based on polar angle (radians) and radius from a centre point. The new Point has z = centre.z
 
     Args:
-        polar_point (PolarPoint): A point in polar coordinates
+        center (Point): the center of polar coordinates
+        radious (float): The distance of a point from the origin
+        angle (float): The angle of the point from the x-axis
 
     Returns:
         Point: A new Point object with x, y, and z coordinates calculated based on the given polar coordinates
     """
 
-    return Point(polar_point.radious * math.cos(polar_point.angle), polar_point.radious * math.sin(polar_point.angle), )
+    return Point(x = center.x + radious*cos(angle), y = center.y + radious*sin(angle), z = center.z)
 
+def PointToPolar(origin: Point, point: Point) -> PolarPoint:
+    """
+    function converting a cartesian coordinate point to polar coordinates point
+    Args:
+        origin (Point): point representing origin point of polar coordinates
+        point (Point): point to be converted to polar coordinates
+
+    Returns:
+        PolarPoint: converted polar coordinates point
+    """
+
+    return PolarPoint(radious= ((point.x - origin.x)**2 + (point.y - origin.y)**2)**0.5, angle = atan2(point.y - origin.y, point.x - origin.x))
