@@ -1,9 +1,11 @@
-import math
+from math import pi, sin, cos
+from platform import android_ver
 from typing import Callable, List
+from design.geometricTools.decorators import geometryDecorator
 
 from design.geometries import Point, linespace, polarToPoint
-from visualizator import main
 
+@geometryDecorator
 def rectangle(startPoint: Point, width: float, height: float) -> list:
     """
 
@@ -23,6 +25,26 @@ def rectangle(startPoint: Point, width: float, height: float) -> list:
     point4 = Point(x = startPoint.x, y = startPoint.y + height, z = startPoint.z)
     return [startPoint.copy(), point2, point3, point4, startPoint.copy()]
 
+@geometryDecorator
+def square(startPoint: Point, side: float) -> list:
+    """
+
+    generate a 2d XY square starting at a given point
+    Args:
+        startPoint (Point): point where the square starts
+        side (float): side of the square
+
+    Returns:
+        list:   list of points that define the square (5 points as we have to draw 4 lines from p1 to p2, p2 to p3, p3 to p4, p4 to p1)
+
+    """
+    point2 = Point(x = startPoint.x + side, y = startPoint.y, z = startPoint.z)
+    point3 = Point(x = startPoint.x + side, y = startPoint.y + side, z = startPoint.z)
+    point4 = Point(x = startPoint.x, y = startPoint.y + side, z = startPoint.z)
+
+    return [startPoint.copy(), point2, point3, point4, startPoint.copy()]
+
+@geometryDecorator
 def arcXY(center: Point, radious: float, startAngle: float, endAngle: float, segments: int = 100) -> list:
     """
 
@@ -39,8 +61,14 @@ def arcXY(center: Point, radious: float, startAngle: float, endAngle: float, seg
     """
 
     angles = linespace(startAngle, endAngle, segments)
-    return [polarToPoint(center, radious, angle) for angle in angles]
+    if endAngle - startAngle != 2 * pi:
+        return [polarToPoint(center, radious, angle) for angle in angles]
 
+    else:
+        angles[-1] = angles[0]
+        return [polarToPoint(center, radious, angle) for angle in angles]
+
+@geometryDecorator
 def varyingArc(center: Point, startRadious: float, endRadious: float, startAngle: float, endAngle: float, segments: int = 100) -> list:
     """
 
@@ -60,6 +88,7 @@ def varyingArc(center: Point, startRadious: float, endRadious: float, startAngle
     angles = linespace(startAngle, endAngle, segments)
     return [polarToPoint(center, radious, angle) for radious, angle in zip(radious, angles)]
 
+
 def circle(center: Point, radious: float, segments: int = 100) -> list:
     """
 
@@ -73,8 +102,9 @@ def circle(center: Point, radious: float, segments: int = 100) -> list:
 
     """
 
-    return arcXY(center, radious, 0, 2*3.14159265359, segments)
+    return arcXY(center, radious, 0, 2*pi, segments)
 
+@geometryDecorator
 def spiral(center: Point, startRadious: float, endRadious: float, startAngle: float, endAngle: float, segments: int = 100) -> list:
     """
 
@@ -95,6 +125,7 @@ def spiral(center: Point, startRadious: float, endRadious: float, startAngle: fl
     angles = linespace(startAngle, endAngle, segments)
     return [polarToPoint(center, radious, angle) for radious, angle in zip(radious, angles)]
 
+@geometryDecorator
 def helix(center: Point, startRadious: float, endRadious: float, startAngle: float, endAngle: float, startZ: float, endZ: float, segments: int = 100) -> list:
     """
 
@@ -118,7 +149,29 @@ def helix(center: Point, startRadious: float, endRadious: float, startAngle: flo
     z = linespace(startZ, endZ, segments)
     return [Point(x = polarToPoint(center, radious, angle).x, y = polarToPoint(center, radious, angle).y, z = z) for radious, angle, z in zip(radious, angles, z)]
 
-def generatePolarShape(center: Point, polar_function: Callable[[float], float], start_angle: float = 0, end_angle: float = 2 * math.pi, segments: int = 100) -> List[Point]:
+@geometryDecorator
+def polygon(center: Point, radious: float, sides: int) -> list:
+    """
+
+    generate a 2d XY polygon with a center at a given point and a given number of sides
+    we generate the polygon by dividing generating midpoints of the polygon sides that are ragious
+    away from the center and then  generate the polygon points by connecting the midpoints
+    Args:
+        center (Point): point where the polygon center is
+        radious (float): radious of the polygon
+        sides (int): number of sides of the polygon
+    Returns:
+        list:   list of points that define the polygon
+
+    """
+
+    angles = linespace(0, 2*pi, sides + 1)
+    midPoints = [polarToPoint(center, radious, angle) for angle in angles]
+    midPoints[-1] = midPoints[0]
+    return midPoints
+
+@geometryDecorator
+def generatePolarShape(center: Point, polar_function: Callable[[float], float], start_angle: float = 0, end_angle: float = 2 * pi, segments: int = 100) -> List[Point]:
     """
     Generates points that approximate a shape defined by a polar equation.
 
@@ -134,11 +187,17 @@ def generatePolarShape(center: Point, polar_function: Callable[[float], float], 
     """
     angles = linespace(start_angle, end_angle, segments)
     points = []
-
-    for angle in angles:
-        radius = polar_function(angle)
-        point = polarToPoint(center, radius, angle)
-        points.append(point)
+    if end_angle - start_angle == 2 * pi:
+        for angle in angles:
+            radius = polar_function(angle)
+            point = polarToPoint(center, radius, angle)
+            points.append(point)
+        points[-1] = points[0]
+    else:
+        for angle in angles:
+            radius = polar_function(angle)
+            point = polarToPoint(center, radius, angle)
+            points.append(point)
 
     return points
 
@@ -149,13 +208,13 @@ def polar_function_1(angle: float) -> float:
     r1 = 4
     r2 = 1
     r3 = 12
-    return 10*(r1 + r2 * math.cos(r3 * angle))
+    return 10*(r1 + r2 * cos(r3 * angle))
 
 
 def polar_function_2(angle: float) -> float:
     # Second equation: r = sin(a/b * θ) + 2
     a = 9
     b = -5
-    return math.sin(a / b * angle) + 2
+    return sin(a / b * angle) + 2
 
 

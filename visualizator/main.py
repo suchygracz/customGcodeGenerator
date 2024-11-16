@@ -31,13 +31,13 @@ class SoftwareRender:
             [1.0, 1.0, 1.0]
         ]
         self.object = getObjectFromPoints(self,listOfPoints)
-        self.grid = getGrid(self,256,5)
+        #self.grid = getGrid(self,256,5)
         #self.object.rotate_y(-math.pi / 4)
 
 
     def draw(self):
         self.screen.fill(pg.Color('black'))
-        self.grid.draw()
+        #self.grid.draw()
         self.object.draw()
 
     def run(self):
@@ -46,7 +46,7 @@ class SoftwareRender:
             self.draw()
             self.camera.control(events)
             self.object.movement(events)
-            self.grid.movement(events)
+            #self.grid.movement(events)
             pg.display.set_caption(str(self.clock.get_fps()))
             pg.display.flip()
             self.clock.tick(self.FPS)

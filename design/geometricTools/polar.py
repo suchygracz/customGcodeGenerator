@@ -34,7 +34,7 @@ def polarToPoint(center: Point, radious: float, angle: float) -> Point:
 
     return Point(x = center.x + radious*cos(angle), y = center.y + radious*sin(angle), z = center.z)
 
-def PointToPolar(origin: Point, point: Point) -> PolarPoint:
+def pointToPolar(origin: Point, point: Point) -> PolarPoint:
     """
     function converting a cartesian coordinate point to polar coordinates point
     Args:
@@ -46,3 +46,16 @@ def PointToPolar(origin: Point, point: Point) -> PolarPoint:
     """
 
     return PolarPoint(radious= ((point.x - origin.x)**2 + (point.y - origin.y)**2)**0.5, angle = atan2(point.y - origin.y, point.x - origin.x))
+
+def rotatePolarPoint(polarPoint: PolarPoint, angle: float) -> PolarPoint:
+    """
+    function rotating a polar point by a given angle
+    Args:
+        polarPoint (PolarPoint): point to be rotated
+        angle (float): angle of rotation
+
+    Returns:
+        PolarPoint: rotated point
+    """
+
+    return PolarPoint(radious = polarPoint.radious, angle = polarPoint.angle + angle)

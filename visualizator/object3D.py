@@ -1,13 +1,13 @@
 import pygame as pg
 from visualizator.matrixFunctions import *
 import numpy as np
-from numba import njit
+#from numba import njit
 
 
-@njit(fastmath=True)
+"""@njit(fastmath=True)
 def any_func(arr, a, b):
     return np.any((arr == a) | (arr == b))
-
+"""
 
 class Object3D:
     def __init__(self, render, vertices='', lines='', is_line=False):
@@ -104,7 +104,7 @@ class Object3D:
                 #print(vertices[line[0]])
                 #sleep(1000)
                 #print(line[0])
-                pg.draw.line(self.render.screen, pg.Color('#4848ed'), vertices[line[0]], vertices[line[1]], 10)
+                pg.draw.line(self.render.screen, pg.Color('#4848ed'), vertices[line[0]], vertices[line[1]], 1)
         else:
             for line in self.lines:  # Faces store line indices in this case
                 # print(vertices[0])

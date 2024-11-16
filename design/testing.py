@@ -1,17 +1,90 @@
-from design.geometries.shapes import varyingArc, spiral, helix, polar_function_1, polar_function_2, generatePolarShape
-from transform.geometryToPlot import pointsIndiciesToStrRepresentation
+from numpy.ma.core import shape
+
+from design.geometricTools.vector import Vector
+from design.geometries.curves import sinusoidalWave, squareWave, tringleWave, cubic_bezier_curve, bezier_curve_de_casteljau
+from design.geometries.shapes import varyingArc, spiral, helix, polar_function_1, polar_function_2, generatePolarShape, polygon, circle, rectangle, square
+from design.layer import Layer
+from transform.transformations import pointsIndiciesToStrRepresentation
+from design.geometricTools.baseTools import move, scale, rotate
 from design.point import Point
-import math
+from design.layer import Layer
+from math import pi, sin, cos
 from visualizator import main
+from design.directCommands.commands import moveWithNoExtrusion, stationaryExtrusion, retraction
+
 
 
 #varc = varyingArc(Point(x = 0, y = 0, z = 0), 30, 90, 0, 3, 100)
-#varc = spiral(Point(x = 0, y = 0, z = 0), 30, 90, 0, 13, 100)
-varc = helix(Point(x = 0, y = 0, z = 0), 30, 30, 0, 33, 0, 100, 100)
+"""
+varc = spiral(Point(x = 0, y = 0, z = 0), 30, 90, 0, 13, 100)
+moovedSpiral = move(varc, Vector(x = 0, y = 0, z = 100))
+"""
+#varc = helix(Point(x = 0, y = 0, z = 0), 30, 30, 0, 33, 0, 100, 100)
+#varc = polygon(Point(x = 0, y = 0, z = 0), 30, 5)
+#varc = sinusoidalWave(Point(x = 0, y = 0, z = 0), 0, 5, 10, 15)
+#varc = squareWave(Point(x = 0, y = 0, z = 0), 0, 5, 10, 15)
+#varc = tringleWave(Point(x = 0, y = 0, z = 0), 0, 5, 10, 15)
 # Generate points for the first polar equation
-#varc = generatePolarShape(Point(x = 0, y = 0, z = 0), polar_function_1, start_angle=0, end_angle=2 * math.pi, segments=500)
+#varc = generatePolarShape(Point(x = 0, y = 0, z = 0), polar_function_1, start_angle=0, end_angle=2 * pi, segments=100)
 #varc = helix(Point(x = 0, y = 0, z = 0), 30, 30, 0, 13, 0, 100, 100)
+
+# Define control points
+P0 = Point(x=0, y=0)
+P1 = Point(x=10, y=20)
+P2 = Point(x=15, y=5)
+P3 = Point(x=20, y=30)
+P4 = Point(x=25, y=10)
+P5 = Point(x=30, y=50)
+P6 = Point(x=40, y=3)
+
+#varc = rectangle(Point(x = 0, y = 0, z = 0), 30, 30)
+
+#varc = polygon(Point(x = 0, y = 0, z = 0), 30, 5)
+#print(varc)
+#layer = Layer(listOfPoints = varc)
+
+# Generate the Bézier curve points
+#varc = cubic_bezier_curve(P0, P1, P2, P3, 200)
+#varc = bezier_curve_de_casteljau([P0, P1, P2, P3, P4, P5, P6], 200)
+
+#combining shapes
+"""
 listOfPoints = pointsIndiciesToStrRepresentation(varc)
-print(listOfPoints)
-softwareRender = main.SoftwareRender(listOfPoints)
+listOfPoints2 = pointsIndiciesToStrRepresentation(moovedSpiral)
+combined = listOfPoints + listOfPoints2
+"""
+#print(listOfPoints)
+#print(combined)
+#print(pointsIndiciesToStrRepresentation(varc))
+#print (layer)
+"""
+varc = polygon(Point(x = 0, y = 0, z = 0), 30, 5)
+#scaledCircle = scale(varc, 2, 'xy')
+movedCircle = rotate(varc, 1, 'z')
+print(varc)
+listOfPointsAcr = varc['shape']
+
+listOfPointsAcr += movedCircle['shape']
+"""
+"""
+sq = square(Point(x = 0, y = 0, z = 0), 30)
+#scaledCircle = scale(varc, 2, 'xy')
+rotatedCircle = rotate(sq, 1, 'z', False)
+print(sq)
+#listOfPointsAcr = sq['shape']
+
+listOfPointsAcr = rotatedCircle['shape']
+"""
+
+polarShape = generatePolarShape(Point(x = 0, y = 0, z = 0), polar_function_1, start_angle=0, end_angle=2 * pi, segments=1000)
+rotated = rotate(polarShape, 1, 'z', False)
+listOfPointsAcr = polarShape['shape']
+listOfPointsAcr += rotated['shape']
+
+#write a test that test move, rotate, scale function from baseTools.py on all the shapes and waves
+# so all of those: sinusoidalWave, squareWave, tringleWave, cubic_bezier_curve, bezier_curve_de_casteljau, varyingArc, spiral, helix, polar_function_1, polar_function_2, generatePolarShape, polygon, circle, rectangle, square
+# and then test the visualizator with the result of the test
+
+print(listOfPointsAcr)
+softwareRender = main.SoftwareRender(pointsIndiciesToStrRepresentation(listOfPointsAcr))
 softwareRender.run()
