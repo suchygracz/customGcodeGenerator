@@ -38,7 +38,7 @@ def pointsIndiciesToStrRepresentation(points: List[Union[Point, List[Point], dic
         points = points['shape']
 
     if isinstance(points, Point):
-        return [f'{points}']
+        return [points.listRepresentation()]
     elif isinstance(points, list):
         flatList = flattenPoints(points)
         counter = 0

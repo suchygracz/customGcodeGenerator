@@ -1,5 +1,6 @@
 from numpy.ma.core import shape
 
+from design.geometricTools.extraTools import nonPlanarVase, vaseMode
 from design.geometricTools.vector import Vector
 from design.geometries.curves import sinusoidalWave, squareWave, tringleWave, cubic_bezier_curve, bezier_curve_de_casteljau
 from design.geometries.shapes import varyingArc, spiral, helix, polar_function_1, polar_function_2, generatePolarShape, polygon, circle, rectangle, square
@@ -76,15 +77,31 @@ print(sq)
 listOfPointsAcr = rotatedCircle['shape']
 """
 
-polarShape = generatePolarShape(Point(x = 0, y = 0, z = 0), polar_function_1, start_angle=0, end_angle=2 * pi, segments=1000)
-rotated = rotate(polarShape, 1, 'z', False)
-listOfPointsAcr = polarShape['shape']
-listOfPointsAcr += rotated['shape']
+polarShape = generatePolarShape(Point(x = 0, y = 0, z = 0), polar_function_1, start_angle=0, end_angle=2 * pi, segments=300)
+polarShape2 = generatePolarShape(Point(x = 150, y = 0, z = 0), polar_function_1, start_angle=0, end_angle=2 * pi, segments=300)
+rotated = rotate(polarShape, 1, 'z', True)
 
+listOfPointsAcr = []
+#listOfPointsAcr.append(polarShape)
+#listOfPointsAcr.append(rotated)
+#listOfPointsAcr.append(moveWithNoExtrusion(Point(x = 0, y = 0, z = 0)))
+#print(polarShape)
 #write a test that test move, rotate, scale function from baseTools.py on all the shapes and waves
 # so all of those: sinusoidalWave, squareWave, tringleWave, cubic_bezier_curve, bezier_curve_de_casteljau, varyingArc, spiral, helix, polar_function_1, polar_function_2, generatePolarShape, polygon, circle, rectangle, square
 # and then test the visualizator with the result of the test
-
-print(listOfPointsAcr)
-softwareRender = main.SoftwareRender(pointsIndiciesToStrRepresentation(listOfPointsAcr))
+"""
+listOfPointsAcr.append(stationaryExtrusion(50, 600))
+listOfPointsAcr.append(moveWithNoExtrusion(Point(x = 25, y = 25, z = 0)))
+listOfPointsAcr.append(stationaryExtrusion(50, 600))
+listOfPointsAcr.append(moveWithNoExtrusion(Point(x = 50, y = 50, z = 0)))
+listOfPointsAcr.append(stationaryExtrusion(50, 600))
+listOfPointsAcr.append(moveWithNoExtrusion(Point(x = 70, y = 70, z = 0)))
+"""
+#listOfPointsAcr.append(retraction(5))
+#print(listOfPointsAcr)
+nonPlanarV = nonPlanarVase(polarShape, 3.6, 50, 0.6, 0.3)
+vase = vaseMode(polarShape2, 50, 0.6, 0.3)
+listOfPointsAcr.append(nonPlanarV)
+listOfPointsAcr.append(vase)
+softwareRender = main.SoftwareRender(listOfPointsAcr)
 softwareRender.run()
