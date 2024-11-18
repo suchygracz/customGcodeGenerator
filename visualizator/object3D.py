@@ -1,6 +1,7 @@
 import pygame as pg
 from visualizator.matrixFunctions import *
 import numpy as np
+from transform.transformations import pointsIndiciesToStrRepresentation
 #from numba import njit
 
 
@@ -10,12 +11,13 @@ def any_func(arr, a, b):
 """
 
 class Object3D:
-    def __init__(self, render, vertices='', lines='', is_line=False):
+    def __init__(self, render, vertices='', lines=None, command_type='shape', data=None):
         self.render = render
         self.vertices = np.array(vertices, dtype=np.float64) if vertices is not None else np.array([], dtype=np.float64)
         #self.faces = lines
-        self.lines = lines
-        self.is_line = is_line
+        self.lines = np.array(lines) if lines else None
+        self.data = data
+        self.command_type = command_type
         self.translate([0.0001, 0.0001, 0.0001])
 
         self.font = pg.font.SysFont('Arial', 30, bold=True)
@@ -98,20 +100,28 @@ class Object3D:
         vertices = vertices @ self.render.projection.to_screen_matrix
         vertices = vertices[:, :2]
 
-        if self.is_line:  # Check if this object should be drawn as lines
-            for line in self.lines:  # Faces store line indices in this case
-                #print(vertices[0])
-                #print(vertices[line[0]])
-                #sleep(1000)
-                #print(line[0])
+        if self.command_type == 'shape':
+            # Draw the usual shape lines
+            for line in self.lines:
                 pg.draw.line(self.render.screen, pg.Color('#4848ed'), vertices[line[0]], vertices[line[1]], 1)
-        else:
-            for line in self.lines:  # Faces store line indices in this case
-                # print(vertices[0])
-                # print(vertices[line[0]])
-                # sleep(1000)
-                # print(line[0])
-                pg.draw.line(self.render.screen, pg.Color('#AEAEAE'), vertices[line[0]], vertices[line[1]], 1)
+
+        elif self.command_type == 'moveWithNoExtrusion':
+            # Draw moves with no extrusion as a lighter/thinner line
+            for line in self.lines:
+                pg.draw.line(self.render.screen, pg.Color('lightgray'), vertices[line[0]], vertices[line[1]], 1)
+
+        elif self.command_type == 'stationaryExtrusion':
+            # Draw stationary extrusion as small violet circles to represent extruded blobs
+            # Use the extrusion amount to determine the size of the circle
+            extrusion_amount = self.data[0]
+            for vertex in vertices:
+                pg.draw.circle(self.render.screen, pg.Color('violet'), vertex, int(extrusion_amount))
+
+        elif self.command_type == 'retraction':
+            # Draw retractions as a red marker to visually show where retraction occurs
+            retraction_amount = self.data[0]
+            for vertex in vertices:
+                pg.draw.circle(self.render.screen, pg.Color('red'), vertex, int(retraction_amount))
     """        
         else:
             for index, color_face in enumerate(self.color_faces):
@@ -244,15 +254,45 @@ class Axes(Object3D):
         self.draw_vertices = False
         self.label = 'XYZ'
 
-def getObjectFromPoints(self, points):
-    vertex = [point + [1] for point in points]  # Convert points to homogeneous coordinates by adding [1]
+def getObjectFromPoints(render, command_type, data=None):
+    """
+    Create an Object3D instance from given points, command type, and additional data.
+
+    Args:
+        render: Reference to the SoftwareRender instance.
+        points (list): List of points to create the object.
+        command_type (str): The type of command, e.g., 'shape', 'moveWithNoExtrusion', 'stationaryExtrusion', 'retraction'.
+        data (dict or Point, optional): Additional data for drawing, such as extrusion amount.
+
+    Returns:
+        Object3D: An Object3D instance representing the given points and command type.
+    """
+    if command_type == 'shape':
+        points = pointsIndiciesToStrRepresentation(data)
+        print(points)
+        vertex = [point + [1] for point in points]  # Convert points to homogeneous coordinates by adding [1]
+    elif command_type == 'moveWithNoExtrusion':
+        print(data)
+        points = data
+        vertex = [point + [1] for point in points]
+    elif command_type == 'stationaryExtrusion':
+        print(data)
+        vertex = [data[1] + [1]]
+    elif command_type == 'retraction':
+        print(data)
+        vertex = [data[1] + [1]]
+
     lines = []
 
-    # Create lines by connecting consecutive points
-    for i in range(len(vertex) - 1):
-        lines.append([i, i + 1])  # Line from point i to point i+1
+    # Create lines by connecting consecutive points if this is a shape or a move command
+    if command_type in ['shape', 'moveWithNoExtrusion']:
+        for i in range(len(vertex) - 1):
+            lines.append([i, i + 1])
 
-    return Object3D(self, vertex, lines, is_line=True)
+    # Return an Object3D with the appropriate command type and data
+    return Object3D(render, vertex, lines, command_type, data)
+
+
 """
 def getGrid(self, size: int = 10, spacing: int = 1):
 
