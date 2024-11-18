@@ -1,6 +1,6 @@
 from numpy.ma.core import shape
 
-from design.geometricTools.extraTools import nonPlanarVase, vaseMode
+from design.geometricTools.extraTools import nonPlanarVase, vaseMode, solid_layer_infill
 from design.geometricTools.vector import Vector
 from design.geometries.curves import sinusoidalWave, squareWave, tringleWave, cubic_bezier_curve, bezier_curve_de_casteljau
 from design.geometries.shapes import varyingArc, spiral, helix, polar_function_1, polar_function_2, generatePolarShape, polygon, circle, rectangle, square
@@ -80,8 +80,12 @@ listOfPointsAcr = rotatedCircle['shape']
 polarShape = generatePolarShape(Point(x = 0, y = 0, z = 0), polar_function_1, start_angle=0, end_angle=2 * pi, segments=300)
 polarShape2 = generatePolarShape(Point(x = 150, y = 0, z = 0), polar_function_1, start_angle=0, end_angle=2 * pi, segments=300)
 rotated = rotate(polarShape, 1, 'z', True)
-
-listOfPointsAcr = []
+circle = circle(Point(x = 0, y = 0, z = 0), 30)
+infill = solid_layer_infill(polarShape, 0.6)
+print("infill")
+print(infill)
+listOfPointsAcr = [polarShape]
+listOfPointsAcr.extend(infill)
 #listOfPointsAcr.append(polarShape)
 #listOfPointsAcr.append(rotated)
 #listOfPointsAcr.append(moveWithNoExtrusion(Point(x = 0, y = 0, z = 0)))
@@ -99,9 +103,9 @@ listOfPointsAcr.append(moveWithNoExtrusion(Point(x = 70, y = 70, z = 0)))
 """
 #listOfPointsAcr.append(retraction(5))
 #print(listOfPointsAcr)
-nonPlanarV = nonPlanarVase(polarShape, 3.6, 50, 0.6, 0.3)
-vase = vaseMode(polarShape2, 50, 0.6, 0.3)
-listOfPointsAcr.append(nonPlanarV)
-listOfPointsAcr.append(vase)
+#nonPlanarV = nonPlanarVase(polarShape, 3.6, 50, 0.6, 0.3)
+#vase = vaseMode(polarShape2, 50, 0.6, 0.3)
+#listOfPointsAcr.append(nonPlanarV)
+#listOfPointsAcr.append(vase)
 softwareRender = main.SoftwareRender(listOfPointsAcr)
 softwareRender.run()
