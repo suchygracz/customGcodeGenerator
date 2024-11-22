@@ -103,7 +103,7 @@ class Object3D:
         if self.command_type == 'shape':
             # Draw the usual shape lines
             for line in self.lines:
-                pg.draw.line(self.render.screen, pg.Color('#4848ed'), vertices[line[0]], vertices[line[1]], 1)
+                pg.draw.line(self.render.screen, pg.Color('#4848ed'), vertices[line[0]], vertices[line[1]], 3)
 
         elif self.command_type == 'moveWithNoExtrusion':
             # Draw moves with no extrusion as a lighter/thinner line

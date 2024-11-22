@@ -105,7 +105,7 @@ def vaseMode(baseShape: dict[str, Union[Point, List[Point]]],height: int, extrus
         for point in range(0, pointsLength):
             extrusion = (distance * extrusionW * extrusionH)
             currentLayer[point].z = shapePoints[point].z + extrusionH * layer
-            currentLayer[point].e = shapePoints[point].e * layer
+            currentLayer[point].e = extrusion
             vasePoints.append(currentLayer[point])
 
     for point in range(1, pointsLength):

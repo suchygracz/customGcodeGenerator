@@ -63,49 +63,66 @@ varc = polygon(Point(x = 0, y = 0, z = 0), 30, 5)
 #scaledCircle = scale(varc, 2, 'xy')
 movedCircle = rotate(varc, 1, 'z')
 print(varc)
-listOfPointsAcr = varc['shape']
+listOfPoints = varc['shape']
 
-listOfPointsAcr += movedCircle['shape']
+listOfPoints += movedCircle['shape']
 """
 """
 sq = square(Point(x = 0, y = 0, z = 0), 30)
 #scaledCircle = scale(varc, 2, 'xy')
 rotatedCircle = rotate(sq, 1, 'z', False)
 print(sq)
-#listOfPointsAcr = sq['shape']
+#listOfPoints = sq['shape']
 
-listOfPointsAcr = rotatedCircle['shape']
+listOfPoints = rotatedCircle['shape']
 """
 
-polarShape = generatePolarShape(Point(x = 0, y = 0, z = 0), polar_function_1, start_angle=0, end_angle=2 * pi, segments=300)
+
 polarShape2 = generatePolarShape(Point(x = 150, y = 0, z = 0), polar_function_1, start_angle=0, end_angle=2 * pi, segments=300)
-rotated = rotate(polarShape, 1, 'z', True)
-circle = circle(Point(x = 0, y = 0, z = 0), 30)
+#rotated = rotate(polarShape, 1, 'z', True)
+#circle = circle(Point(x = 0, y = 0, z = 0), 30)
+
+
+polarShape = generatePolarShape(Point(x = 0, y = 0, z = 0), polar_function_1, start_angle=0, end_angle=2 * pi, segments=300)
 infill = solid_layer_infill(polarShape, 0.6)
-print("infill")
-print(infill)
-listOfPointsAcr = [polarShape]
-listOfPointsAcr.extend(infill)
-#listOfPointsAcr.append(polarShape)
-#listOfPointsAcr.append(rotated)
-#listOfPointsAcr.append(moveWithNoExtrusion(Point(x = 0, y = 0, z = 0)))
+npVase = nonPlanarVase(polarShape, 3.6, 50, 0.6, 0.3)
+
+listOfPoints = [polarShape]
+listOfPoints.extend(infill)
+listOfPoints.append(npVase)
+#listOfPoints.append(polarShape)
+#listOfPoints.append(rotated)
+#listOfPoints.append(moveWithNoExtrusion(Point(x = 0, y = 0, z = 0)))
 #print(polarShape)
 #write a test that test move, rotate, scale function from baseTools.py on all the shapes and waves
 # so all of those: sinusoidalWave, squareWave, tringleWave, cubic_bezier_curve, bezier_curve_de_casteljau, varyingArc, spiral, helix, polar_function_1, polar_function_2, generatePolarShape, polygon, circle, rectangle, square
 # and then test the visualizator with the result of the test
 """
-listOfPointsAcr.append(stationaryExtrusion(50, 600))
-listOfPointsAcr.append(moveWithNoExtrusion(Point(x = 25, y = 25, z = 0)))
-listOfPointsAcr.append(stationaryExtrusion(50, 600))
-listOfPointsAcr.append(moveWithNoExtrusion(Point(x = 50, y = 50, z = 0)))
-listOfPointsAcr.append(stationaryExtrusion(50, 600))
-listOfPointsAcr.append(moveWithNoExtrusion(Point(x = 70, y = 70, z = 0)))
+listOfPoints.append(stationaryExtrusion(50, 600))
+listOfPoints.append(moveWithNoExtrusion(Point(x = 25, y = 25, z = 0)))
+listOfPoints.append(stationaryExtrusion(50, 600))
+listOfPoints.append(moveWithNoExtrusion(Point(x = 50, y = 50, z = 0)))
+listOfPoints.append(stationaryExtrusion(50, 600))
+listOfPoints.append(moveWithNoExtrusion(Point(x = 70, y = 70, z = 0)))
 """
-#listOfPointsAcr.append(retraction(5))
-#print(listOfPointsAcr)
+#listOfPoints.append(retraction(5))
+#print(listOfPoints)
 #nonPlanarV = nonPlanarVase(polarShape, 3.6, 50, 0.6, 0.3)
 #vase = vaseMode(polarShape2, 50, 0.6, 0.3)
-#listOfPointsAcr.append(nonPlanarV)
-#listOfPointsAcr.append(vase)
-softwareRender = main.SoftwareRender(listOfPointsAcr)
+#listOfPoints.append(nonPlanarV)
+#listOfPoints.append(vase)
+
+polarShape = generatePolarShape(Point(x = 0, y = 0, z = 0), polar_function_1, start_angle=0, end_angle=2 * pi, segments=300)
+circle = circle(Point(x = 0, y = 0, z = 0), 30)
+circleInfill = solid_layer_infill(circle, 0.6)
+#infill = solid_layer_infill(polarShape, 0.6)
+#npVase = nonPlanarVase(polarShape, 3.6, 50, 0.6, 0.3)
+
+#listOfPoints = [polarShape]
+#listOfPoints.extend(infill)
+#listOfPoints.append(npVase)
+listOfPoints = [circle]
+listOfPoints.extend(circleInfill)
+
+softwareRender = main.SoftwareRender(listOfPoints)
 softwareRender.run()

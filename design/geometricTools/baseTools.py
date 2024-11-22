@@ -271,42 +271,7 @@ def rotate(points: Union[Point, List[Point], dict], angle: float, axis: str = 'z
     else:
         raise TypeError(f"Unexpected item type: {type(points)}. Expected Point, list of Points, or dict.")
 
-"""
-def rotate(points: Union[Point, List[Point], dict], angle: float, axis: str = 'z') -> Union[Point, dict]:
 
-    if isinstance(points, dict):
-        points = points['shape']
-
-    if isinstance(points, Point):
-        return points
-
-    elif isinstance(points, list):
-
-        # Determine if the shape is enclosed by checking if the first point equals the last point
-        is_enclosed = points and points[0] == points[-1]
-
-        # Exclude the last point if it is a copy of the first
-        if is_enclosed:
-            points = points[:-1]
-
-        # Calculate the center point
-        center_x = sum(p.x for p in points) / len(points)
-        center_y = sum(p.y for p in points) / len(points)
-        center_z = sum(p.z for p in points) / len(points)
-        center = Point(x=center_x, y=center_y, z=center_z)
-
-        # Rotate points around the center using polar coordinates
-        rotated_points = []
-        for p in points:
-            polar_point = pointToPolar(center, p)
-            rotated_polar_point = rotatePolarPoint(polar_point, angle)
-            rotated_points.append(polarToPoint(center, rotated_polar_point.radious, rotated_polar_point.angle))
-
-        if is_enclosed:
-            rotated_points.append(rotated_points[0].copy())
-
-        return {'shape': rotated_points}
-"""
 
 def copy(points: Union[Point, List[Point], dict]) -> Union[Point, dict]:
     """
@@ -333,3 +298,40 @@ def copy(points: Union[Point, List[Point], dict]) -> Union[Point, dict]:
 
     else:
         raise TypeError(f"Unexpected item type: {type(points)}. Expected Point, list of Points, or dict.")
+
+    """
+    def rotate(points: Union[Point, List[Point], dict], angle: float, axis: str = 'z') -> Union[Point, dict]:
+
+        if isinstance(points, dict):
+            points = points['shape']
+
+        if isinstance(points, Point):
+            return points
+
+        elif isinstance(points, list):
+
+            # Determine if the shape is enclosed by checking if the first point equals the last point
+            is_enclosed = points and points[0] == points[-1]
+
+            # Exclude the last point if it is a copy of the first
+            if is_enclosed:
+                points = points[:-1]
+
+            # Calculate the center point
+            center_x = sum(p.x for p in points) / len(points)
+            center_y = sum(p.y for p in points) / len(points)
+            center_z = sum(p.z for p in points) / len(points)
+            center = Point(x=center_x, y=center_y, z=center_z)
+
+            # Rotate points around the center using polar coordinates
+            rotated_points = []
+            for p in points:
+                polar_point = pointToPolar(center, p)
+                rotated_polar_point = rotatePolarPoint(polar_point, angle)
+                rotated_points.append(polarToPoint(center, rotated_polar_point.radious, rotated_polar_point.angle))
+
+            if is_enclosed:
+                rotated_points.append(rotated_points[0].copy())
+
+            return {'shape': rotated_points}
+    """
