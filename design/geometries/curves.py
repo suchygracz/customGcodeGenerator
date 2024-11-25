@@ -240,3 +240,143 @@ def bezier_curve_de_casteljau(control_points: List[Point], num_points: int = 100
     curve_points = [de_casteljau(control_points, t) for t in t_values]
     return curve_points
 
+@geometryDecorator
+def cardinal_spline(points: List[Point], tension: float = 0.0, resolution: int = 10) -> List[Point]:
+    """
+    Generates a Cardinal Spline based on given control points.
+
+    Args:
+        points (List[Point]): List of control points through which the spline will pass.
+        tension (float): The tension parameter. Range -1 to 1, where -1 is very tight, and 1 is very loose.
+        resolution (int): The number of interpolated points between each pair of control points.
+
+    Returns:
+        List[Point]: The list of points representing the interpolated Cardinal Spline.
+    """
+    if len(points) < 2:
+        raise ValueError("At least two points are required to generate a cardinal spline.")
+
+    spline_points = []
+
+    # Iterate through each pair of control points
+    for i in range(len(points) - 1):
+        p0 = points[i - 1] if i > 0 else points[i]
+        p1 = points[i]
+        p2 = points[i + 1]
+        p3 = points[i + 2] if i + 2 < len(points) else points[i + 1]
+
+        # Compute interpolated points between p1 and p2
+        tValuese = linespace(0, 1, resolution)
+        for t in tValuese:
+            # Hermite basis functions (modified by tension)
+            t2 = t * t
+            t3 = t2 * t
+
+            h1 = 2 * t3 - 3 * t2 + 1
+            h2 = -2 * t3 + 3 * t2
+            h3 = t3 - 2 * t2 + t
+            h4 = t3 - t2
+
+            # Tension adjustment
+            m1_x = (1 - tension) * (p2.x - p0.x) / 2
+            m1_y = (1 - tension) * (p2.y - p0.y) / 2
+            m2_x = (1 - tension) * (p3.x - p1.x) / 2
+            m2_y = (1 - tension) * (p3.y - p1.y) / 2
+
+            # Interpolated point
+            x = h1 * p1.x + h2 * p2.x + h3 * m1_x + h4 * m2_x
+            y = h1 * p1.y + h2 * p2.y + h3 * m1_y + h4 * m2_y
+            z = p1.z  # Retain the z-coordinate from the control point p1 for simplicity
+
+            spline_points.append(Point(x=x, y=y, z=z))
+
+    return spline_points
+
+
+def catmull_rom_spline(points: List[Point], resolution: int = 10) -> List[Point]:
+    """
+    Generates a Catmull-Rom Spline based on given control points.
+
+    Args:
+        points (List[Point]): List of control points through which the spline will pass.
+        resolution (int): The number of interpolated points between each pair of control points.
+
+    Returns:
+        List[Point]: The list of points representing the interpolated Catmull-Rom Spline.
+    """
+    return cardinal_spline(points, tension=0.0, resolution=resolution)
+
+
+def basis_function(i: int, k: int, t: float, knot_vector: List[float]) -> float:
+    """
+    Calculate the basis function value for a given i, k, t, and knot vector.
+    """
+    if k == 1:
+        if knot_vector[i] <= t < knot_vector[i + 1]:
+            return 1.0
+        return 0.0
+    else:
+        denom1 = knot_vector[i + k - 1] - knot_vector[i]
+        denom2 = knot_vector[i + k] - knot_vector[i + 1]
+
+        term1 = ((t - knot_vector[i]) / denom1) * basis_function(i, k - 1, t, knot_vector) if denom1 != 0 else 0
+        term2 = ((knot_vector[i + k] - t) / denom2) * basis_function(i + 1, k - 1, t, knot_vector) if denom2 != 0 else 0
+
+        return term1 + term2
+
+
+def generate_open_uniform_knot_vector(num_control_points: int, degree: int) -> List[float]:
+    """
+    Generate an open uniform knot vector.
+
+    Args:
+        num_control_points (int): Number of control points.
+        degree (int): Degree of the curve.
+
+    Returns:
+        List[float]: Generated knot vector.
+    """
+    num_knots = num_control_points + degree + 1
+    knot_vector = [0] * (degree + 1)  # Start with repeated knots
+    knot_vector += list(range(1, num_knots - 2 * (degree + 1) + 1))  # Uniform spacing
+    knot_vector += [num_knots - 2 * (degree + 1)] * (degree + 1)  # End with repeated knots
+    return knot_vector
+
+@geometryDecorator
+def nurbs_curve(control_points: List[Point], weights: List[float], degree: int, num_points: int = 100) -> List[Point]:
+    """
+    Generate a NURBS curve from control points, weights, and degree.
+
+    Args:
+        control_points (List[Point]): List of control points.
+        weights (List[float]): Weights for each control point.
+        degree (int): Degree of the NURBS curve.
+        num_points (int): Number of points to generate for the curve.
+
+    Returns:
+        List[Point]: List of points representing the NURBS curve.
+    """
+    # Automatically generate the knot vector based on control points and degree
+    num_control_points = len(control_points)
+    knot_vector = generate_open_uniform_knot_vector(num_control_points, degree)
+
+    # Number of knots should match `num_control_points + degree + 1`
+    assert len(knot_vector) == num_control_points + degree + 1, "Incorrect knot vector length."
+
+    # Generate NURBS points
+    curve_points = []
+    t_values = linespace(knot_vector[degree], knot_vector[-degree - 1], num_points)
+
+    for t in t_values:
+        numerator = Point(x=0, y=0, z=0, e=0)
+        denominator = 0.0
+        for i in range(num_control_points):
+            basis = basis_function(i, degree + 1, t, knot_vector)
+            weighted_basis = basis * weights[i]
+            numerator = add_points(numerator, multiply_point_scalar(control_points[i], weighted_basis))
+            denominator += weighted_basis
+
+        if denominator != 0:
+            curve_points.append(multiply_point_scalar(numerator, 1 / denominator))
+
+    return curve_points

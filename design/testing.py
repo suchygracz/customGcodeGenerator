@@ -2,7 +2,7 @@ from numpy.ma.core import shape
 
 from design.geometricTools.extraTools import nonPlanarVase, vaseMode, solid_layer_infill
 from design.geometricTools.vector import Vector
-from design.geometries.curves import sinusoidalWave, squareWave, tringleWave, cubic_bezier_curve, bezier_curve_de_casteljau
+from design.geometries.curves import sinusoidalWave, squareWave, tringleWave, cubic_bezier_curve, bezier_curve_de_casteljau, cardinal_spline, nurbs_curve
 from design.geometries.shapes import varyingArc, spiral, helix, polar_function_1, polar_function_2, generatePolarShape, polygon, circle, rectangle, square
 from design.layer import Layer
 from transform.transformations import pointsIndiciesToStrRepresentation
@@ -81,11 +81,37 @@ polarShape = generatePolarShape(Point(x = 0, y = 0, z = 0), polar_function_1, st
 polarShape2 = generatePolarShape(Point(x = 150, y = 0, z = 0), polar_function_1, start_angle=0, end_angle=2 * pi, segments=300)
 rotated = rotate(polarShape, 1, 'z', True)
 circle = circle(Point(x = 0, y = 0, z = 0), 30)
+cardinalS = cardinal_spline([Point(x = 0, y = 0, z = 0), Point(x = 10, y = 10, z = 0), Point(x = 20, y = 0, z = 0), Point(x = 30, y = 10, z = 0), Point(x = 40, y = 0, z = 0)], 0, 1000)
 infill = solid_layer_infill(polarShape, 0.6)
 print("infill")
 print(infill)
-listOfPointsAcr = [polarShape]
-listOfPointsAcr.extend(infill)
+
+control_points = [
+    Point(x=0, y=0, z=0),
+    Point(x=10, y=20, z=0),
+    Point(x=20, y=0, z=0),
+    Point(x=30, y=40, z=0),
+    Point(x=50, y=20, z=0),
+    Point(x=70, y=0, z=0)
+]
+
+# Define uniform weights
+weights = [1, 1, 1, 1, 1, 1]
+
+# Degree of the curve
+degree = 3
+
+# Knot vector (open configuration)
+knot_vector = [0, 0, 0, 1, 2, 4, 7, 9, 9, 9]
+
+stationaryExtrusion = stationaryExtrusion(50,300)
+
+# Generate the NURBS curve points using the extended control points
+nurbs_points = nurbs_curve(control_points, weights, degree)
+listOfPoints = [nurbs_points]
+#listOfPoints.append(stationaryExtrusion)
+#listOfPoints = [polarShape]
+#listOfPoints.extend(infill)
 #listOfPointsAcr.append(polarShape)
 #listOfPointsAcr.append(rotated)
 #listOfPointsAcr.append(moveWithNoExtrusion(Point(x = 0, y = 0, z = 0)))
@@ -105,7 +131,7 @@ listOfPointsAcr.append(moveWithNoExtrusion(Point(x = 70, y = 70, z = 0)))
 #print(listOfPointsAcr)
 #nonPlanarV = nonPlanarVase(polarShape, 3.6, 50, 0.6, 0.3)
 #vase = vaseMode(polarShape2, 50, 0.6, 0.3)
-#listOfPointsAcr.append(nonPlanarV)
+#listOfPoints.append(nonPlanarV)
 #listOfPointsAcr.append(vase)
-softwareRender = main.SoftwareRender(listOfPointsAcr)
+softwareRender = main.SoftwareRender(listOfPoints)
 softwareRender.run()
