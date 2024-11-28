@@ -87,14 +87,14 @@ cardinalS = cardinal_spline([Point(x = 0, y = 0, z = 0), Point(x = 10, y = 10, z
 circle = circle(Point(x = 0, y = 0, z = 0), 30, 8)
 listOfPoints = [circle]
 '''
-'''
-circle = circle(Point(x = 0, y = 0, z = 0), 30, 100)
+
+circle = circle(Point(x = 0, y = 0, z = 0), 20, 100)
 circinfill = solidLayerInfill(circle, 0.6)
-vase = vaseMode(circle, 50, 0.6, 0.3)
+vase = vaseMode(circle, 120, 0.6, 0.2)
 listOfPoints = [circle]
 listOfPoints.extend(circinfill)
 listOfPoints.append(vase)
-'''
+
 #creation of non polar vase with infill
 
 '''
