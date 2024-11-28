@@ -89,6 +89,8 @@ def vaseMode(baseShape: dict[str, Union[Point, List[Point]]],height: int, extrus
     previousPoint = shapePoints[0]
 
     vasePoints = [previousPoint]
+    for point in shapePoints:
+        point.e = 0.0
 
     for point in range(1, pointsLength):
         distance = euclideanDistance(previousPoint, shapePoints[point])
@@ -121,7 +123,7 @@ def vaseMode(baseShape: dict[str, Union[Point, List[Point]]],height: int, extrus
 
 
 
-def solid_layer_infill(baseShape: dict[str, List[Point]], extrusion_width: float) -> List[dict[str, Union[List[Point], Point]]]:
+def solidLayerInfill(baseShape: dict[str, List[Point]], extrusion_width: float) -> List[dict[str, Union[List[Point], Point]]]:
     """
     Generate a solid layer inside the enclosed base shape using a linear infill pattern that fits inside a complex shape.
 
@@ -156,7 +158,7 @@ def solid_layer_infill(baseShape: dict[str, List[Point]], extrusion_width: float
         end_point = Point(x=max_x, y=current_y, z=0)
 
         # Find intersections between the line and the boundary of the shape
-        intersections = find_intersections_with_shape(shape_points, start_point, end_point)
+        intersections = findIntersectionsWithShape(shape_points, start_point, end_point)
 
         # Sort intersections by x to determine segments within the shape
         intersections.sort(key=lambda p: p.x)
@@ -182,7 +184,7 @@ def solid_layer_infill(baseShape: dict[str, List[Point]], extrusion_width: float
     return infill_commands
 
 # Required supporting function for intersection calculations
-def find_intersections_with_shape(shape_points: List[Point], start: Point, end: Point) -> List[Point]:
+def findIntersectionsWithShape(shape_points: List[Point], start: Point, end: Point) -> List[Point]:
     """
     Finds the intersections of a line segment with the boundary of a complex shape.
 
@@ -201,14 +203,14 @@ def find_intersections_with_shape(shape_points: List[Point], start: Point, end: 
         shape_start = shape_points[i]
         shape_end = shape_points[i + 1]
 
-        intersection = find_line_intersection(start, end, shape_start, shape_end)
+        intersection = findLineIntersection(start, end, shape_start, shape_end)
         if intersection:
             intersections.append(intersection)
 
     return intersections
 
 
-def find_line_intersection(start1: Point, end1: Point, start2: Point, end2: Point) -> Union[None, Point]:
+def findLineIntersection(start1: Point, end1: Point, start2: Point, end2: Point) -> Union[None, Point]:
     """
     Finds the intersection point between two line segments, if it exists.
 

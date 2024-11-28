@@ -1,11 +1,11 @@
 from numpy.ma.core import shape
 
-from design.geometricTools.extraTools import nonPlanarVase, vaseMode, solid_layer_infill
+from design.geometricTools.extraTools import nonPlanarVase, vaseMode, solidLayerInfill
 from design.geometricTools.vector import Vector
 from design.geometries.curves import sinusoidalWave, squareWave, tringleWave, cubic_bezier_curve, bezier_curve_de_casteljau, cardinal_spline, nurbs_curve
 from design.geometries.shapes import varyingArc, spiral, helix, polar_function_1, polar_function_2, generatePolarShape, polygon, circle, rectangle, square
 from design.layer import Layer
-from transform.transformations import pointsIndiciesToStrRepresentation
+from transform.transformations import pointsIndiciesToStrRepresentation, parseStepsToGcode
 from design.geometricTools.baseTools import move, scale, rotate
 from design.point import Point
 from design.layer import Layer
@@ -77,15 +77,34 @@ print(sq)
 listOfPointsAcr = rotatedCircle['shape']
 """
 
-polarShape = generatePolarShape(Point(x = 0, y = 0, z = 0), polar_function_1, start_angle=0, end_angle=2 * pi, segments=300)
-polarShape2 = generatePolarShape(Point(x = 150, y = 0, z = 0), polar_function_1, start_angle=0, end_angle=2 * pi, segments=300)
-rotated = rotate(polarShape, 1, 'z', True)
-circle = circle(Point(x = 0, y = 0, z = 0), 30)
-cardinalS = cardinal_spline([Point(x = 0, y = 0, z = 0), Point(x = 10, y = 10, z = 0), Point(x = 20, y = 0, z = 0), Point(x = 30, y = 10, z = 0), Point(x = 40, y = 0, z = 0)], 0, 1000)
-infill = solid_layer_infill(polarShape, 0.6)
-print("infill")
-print(infill)
 
+polarShape2 = generatePolarShape(Point(x = 150, y = 0, z = 0), polar_function_1, start_angle=0, end_angle=2 * pi, segments=300)
+#rotated = rotate(polarShape, 1, 'z', True)
+
+cardinalS = cardinal_spline([Point(x = 0, y = 0, z = 0), Point(x = 10, y = 10, z = 0), Point(x = 20, y = 0, z = 0), Point(x = 30, y = 10, z = 0), Point(x = 40, y = 0, z = 0)], 0, 1000)
+'''
+#simple low res circle
+circle = circle(Point(x = 0, y = 0, z = 0), 30, 8)
+listOfPoints = [circle]
+'''
+'''
+circle = circle(Point(x = 0, y = 0, z = 0), 30, 100)
+circinfill = solidLayerInfill(circle, 0.6)
+vase = vaseMode(circle, 50, 0.6, 0.3)
+listOfPoints = [circle]
+listOfPoints.extend(circinfill)
+listOfPoints.append(vase)
+'''
+#creation of non polar vase with infill
+
+'''
+polarShape = generatePolarShape(Point(x = 0, y = 0, z = 0), polar_function_1, start_angle=0, end_angle=2 * pi, segments=300)
+infill = solidLayerInfill(polarShape, 0.6)
+listOfPoints = [polarShape]
+listOfPoints.extend(infill)
+nonPlanarV = nonPlanarVase(polarShape, 3.6, 50, 0.6, 0.3)
+listOfPoints.append(nonPlanarV)
+'''
 control_points = [
     Point(x=0, y=0, z=0),
     Point(x=10, y=20, z=0),
@@ -108,10 +127,9 @@ stationaryExtrusion = stationaryExtrusion(50,300)
 
 # Generate the NURBS curve points using the extended control points
 nurbs_points = nurbs_curve(control_points, weights, degree)
-listOfPoints = [nurbs_points]
+#listOfPoints = [nurbs_points]
 #listOfPoints.append(stationaryExtrusion)
-#listOfPoints = [polarShape]
-#listOfPoints.extend(infill)
+
 #listOfPointsAcr.append(polarShape)
 #listOfPointsAcr.append(rotated)
 #listOfPointsAcr.append(moveWithNoExtrusion(Point(x = 0, y = 0, z = 0)))
@@ -129,9 +147,12 @@ listOfPointsAcr.append(moveWithNoExtrusion(Point(x = 70, y = 70, z = 0)))
 """
 #listOfPointsAcr.append(retraction(5))
 #print(listOfPointsAcr)
-#nonPlanarV = nonPlanarVase(polarShape, 3.6, 50, 0.6, 0.3)
+
 #vase = vaseMode(polarShape2, 50, 0.6, 0.3)
-#listOfPoints.append(nonPlanarV)
+
 #listOfPointsAcr.append(vase)
+
+
+gcode = parseStepsToGcode(listOfPoints, 'output.gcode', [0.4, 0.2])
 softwareRender = main.SoftwareRender(listOfPoints)
 softwareRender.run()

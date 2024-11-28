@@ -2,3 +2,5 @@ pydantic
 typing
 numpy
 pygame
+pytest
+unittest

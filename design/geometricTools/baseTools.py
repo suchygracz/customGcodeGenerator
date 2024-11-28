@@ -271,6 +271,33 @@ def rotate(points: Union[Point, List[Point], dict], angle: float, axis: str = 'z
     else:
         raise TypeError(f"Unexpected item type: {type(points)}. Expected Point, list of Points, or dict.")
 
+
+def copy(points: Union[Point, List[Point], dict]) -> Union[Point, dict]:
+    """
+    Creates a copy of a point or list of points.
+
+    Args:
+        points (Union[Point, List[Point], dict]): The point(s) to copy. Can be a single Point, a list of Points, or a dictionary with key 'shape'.
+
+    Returns:
+        Union[Point, dict]: A Point or dictionary with key 'shape' containing a list of copied points.
+
+    Raises:
+        TypeError: If the type of `points` is not supported.
+    """
+
+    if isinstance(points, dict):
+        points = points['shape']
+
+    if isinstance(points, Point):
+        return points.copy()
+
+    elif isinstance(points, list):
+        return [p.copy() for p in points]
+
+    else:
+        raise TypeError(f"Unexpected item type: {type(points)}. Expected Point, list of Points, or dict.")
+
 """
 def rotate(points: Union[Point, List[Point], dict], angle: float, axis: str = 'z') -> Union[Point, dict]:
 
@@ -307,29 +334,3 @@ def rotate(points: Union[Point, List[Point], dict], angle: float, axis: str = 'z
 
         return {'shape': rotated_points}
 """
-
-def copy(points: Union[Point, List[Point], dict]) -> Union[Point, dict]:
-    """
-    Creates a copy of a point or list of points.
-
-    Args:
-        points (Union[Point, List[Point], dict]): The point(s) to copy. Can be a single Point, a list of Points, or a dictionary with key 'shape'.
-
-    Returns:
-        Union[Point, dict]: A Point or dictionary with key 'shape' containing a list of copied points.
-
-    Raises:
-        TypeError: If the type of `points` is not supported.
-    """
-
-    if isinstance(points, dict):
-        points = points['shape']
-
-    if isinstance(points, Point):
-        return points.copy()
-
-    elif isinstance(points, list):
-        return [p.copy() for p in points]
-
-    else:
-        raise TypeError(f"Unexpected item type: {type(points)}. Expected Point, list of Points, or dict.")

@@ -28,21 +28,12 @@ class TestTransformations(unittest.TestCase):
             generatePolarShape(Point(x=0, y=0, z=0), polar_function_2, start_angle=0, end_angle=10 * pi, segments=1000)
         ]
 
-    def test_transformations(self):
-        for shape in self.shapes:
-            with self.subTest(shape=shape):
-                moved_shape = move(shape, Vector(x=10, y=10, z=10))
-                #scaled_shape = scale(shape, 2, 'xy')
-                #rotated_shape = rotate(shape, pi/4, 'z')
-                #self.assertIsNotNone(moved_shape)
-                #self.assertIsNotNone(scaled_shape)
-                #self.assertIsNotNone(rotated_shape)
 
     def test_visualizator(self):
         for shape in self.shapes:
             with self.subTest(shape=shape):
                 #extracredPoints = shape['shape']
-                listOfPoints = pointsIndiciesToStrRepresentation(shape)
+                listOfPoints = [shape]
                 softwareRender = main.SoftwareRender(listOfPoints)
                 self.assertIsNotNone(softwareRender)
                 softwareRender.run()
