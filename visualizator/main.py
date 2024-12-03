@@ -1,8 +1,10 @@
 from visualizator.object3D import *
 from visualizator.camera import *
 from visualizator.projection import *
+from design.point import Point
 import pygame as pg
 import numpy as np
+
 
 
 class SoftwareRender:
@@ -22,7 +24,7 @@ class SoftwareRender:
         self.camera = Camera(self, [-5, 6, -55])
         self.projection = Projection(self)
         #self.grid = Grid(self)
-        last_point = None
+        last_point = [0,0,0]
 
         for step in listOfSteps:
             command_type, data = next(iter(step.items()))
@@ -56,7 +58,7 @@ class SoftwareRender:
 
 
     def draw(self):
-        self.screen.fill(pg.Color('black'))
+        self.screen.fill(pg.Color('white'))
         #self.grid.draw()
         for obj in self.objects:
             obj.draw()
@@ -79,3 +81,7 @@ class SoftwareRender:
 if __name__ == '__main__':
     app = SoftwareRender()
     app.run()"""
+
+def visualize(listOfSteps):
+    app = SoftwareRender(listOfSteps)
+    app.run()

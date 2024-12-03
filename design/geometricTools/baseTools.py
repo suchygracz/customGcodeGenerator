@@ -286,14 +286,18 @@ def copy(points: Union[Point, List[Point], dict]) -> Union[Point, dict]:
         TypeError: If the type of `points` is not supported.
     """
 
-    if isinstance(points, dict):
-        points = points['shape']
+
 
     if isinstance(points, Point):
         return points.copy()
 
     elif isinstance(points, list):
         return [p.copy() for p in points]
+
+    elif isinstance(points, dict):
+        points = points['shape']
+        return {'shape': [p.copy() for p in points]}
+
 
     else:
         raise TypeError(f"Unexpected item type: {type(points)}. Expected Point, list of Points, or dict.")

@@ -292,7 +292,6 @@ def cardinal_spline(points: List[Point], tension: float = 0.0, resolution: int =
 
     return spline_points
 
-
 def catmull_rom_spline(points: List[Point], resolution: int = 10) -> List[Point]:
     """
     Generates a Catmull-Rom Spline based on given control points.
@@ -341,6 +340,7 @@ def generate_open_uniform_knot_vector(num_control_points: int, degree: int) -> L
     knot_vector += list(range(1, num_knots - 2 * (degree + 1) + 1))  # Uniform spacing
     knot_vector += [num_knots - 2 * (degree + 1)] * (degree + 1)  # End with repeated knots
     return knot_vector
+
 
 @geometryDecorator
 def nurbs_curve(control_points: List[Point], weights: List[float], degree: int, num_points: int = 100) -> List[Point]:

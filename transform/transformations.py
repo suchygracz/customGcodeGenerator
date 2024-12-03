@@ -53,8 +53,58 @@ def pointsIndiciesToStrRepresentation(points: List[Union[Point, List[Point], dic
                 listOfPoints.append(point.listRepresentation())
         return listOfPoints
 
+# Define a function for the starting G-code
+def generateStartingGcode(hotend_temp: float, bed_temp: float) -> List[str]:
+    """
+    Generates starting G-code commands to set up the 3D printer.
 
-def parseStepsToGcode(steps: List[Dict], filename: str, extrusion_params: List[float]):
+    Args:
+        hotend_temp (float): Temperature to set for the hotend in degrees Celsius.
+        bed_temp (float): Temperature to set for the print bed in degrees Celsius.
+
+    Returns:
+        List[str]: List of G-code commands to set up the 3D printer.
+    """
+    startingGcode = [
+        "G21 ; Set units to millimeters",
+        "G90 ; Use absolute positioning",
+        "M82 ; Use absolute distances for extrusion",
+        f"M104 S{hotend_temp} ; Set hotend temperature",
+        f"M140 S{bed_temp} ; Set bed temperature",
+        "G28 ; Home all axes",
+        "M107 S255; set fan to 100%"
+        f"M190 S{bed_temp} ; Wait for bed temperature to reach {bed_temp}°C",
+        f"M109 S{hotend_temp} ; Wait for hotend temperature to reach {hotend_temp}°C",
+        "G1 Z0.3 F5000 ; Move nozzle to start height",
+        "G92 E0 ; Zero the extruder",
+        "G1 X0 Y0 F3000 ; Move to start position",
+    ]
+    return startingGcode
+
+# Define a function for the ending G-code
+def generateEndingGcode() -> List[str]:
+    """
+    Generates ending G-code commands to shut down the 3D printer.
+
+    Returns:
+        List[str]: List of G-code commands to safely end the print.
+    """
+    endingGcode = [
+        "G91 ; Relative positioning",
+        "G1 E-3 F300 ; Retract filament a little to reduce ooze",
+        "G1 Z10 F3000 ; Lift the nozzle",
+        "G90 ; Absolute positioning",
+        "G1 X0 Y200 F3000 ; Move the print head away from the print",
+        "M104 S0 ; Turn off hotend",
+        "M140 S0 ; Turn off bed",
+        "M84 ; Disable motors",
+        "M107 ; Turn off fan",
+    ]
+    return endingGcode
+
+
+
+def parseStepsToGcode(steps: List[Dict], filename: str, extrusion_params: List[float], hotendTemp: float, bedTemp: float) -> None:
     """
     Parses a list of steps representing G-code commands and writes them to a G-code file.
     Adds extrusion calculation for G-code moves if extrusion is not explicitly defined.
@@ -100,6 +150,10 @@ def parseStepsToGcode(steps: List[Dict], filename: str, extrusion_params: List[f
     prime_amount = retraction_amount * 0.9  # Extrude back slightly less than retracted amount (e.g., 90%)
 
     with open(filename, 'w') as gcode_file:
+        startingGcode = generateStartingGcode(hotendTemp, bedTemp)
+        for line in startingGcode:
+            gcode_file.write(line + "\n")
+
         for step in steps:
             command_type, data = next(iter(step.items()))  # Extract the single key-value pair in each step
 
@@ -148,4 +202,6 @@ def parseStepsToGcode(steps: List[Dict], filename: str, extrusion_params: List[f
                 case _:
                     gcode_file.write(f"; Unknown command type: {command_type}\n")
 
-
+        endingGcode = generateEndingGcode()
+        for line in endingGcode:
+            gcode_file.write(line + "\n")

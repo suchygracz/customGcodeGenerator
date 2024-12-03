@@ -122,7 +122,7 @@ def vaseMode(baseShape: dict[str, Union[Point, List[Point]]],height: int, extrus
     return {'shape': vasePoints}
 
 
-
+'''
 def solidLayerInfill(baseShape: dict[str, List[Point]], extrusion_width: float) -> List[dict[str, Union[List[Point], Point]]]:
     """
     Generate a solid layer inside the enclosed base shape using a linear infill pattern that fits inside a complex shape.
@@ -182,6 +182,103 @@ def solidLayerInfill(baseShape: dict[str, List[Point]], extrusion_width: float) 
             infill_commands.append(move_to_next_start)
 
     return infill_commands
+'''
+
+def solidLayerInfill(baseShape: dict[str, List[Point]], extrusion_width: float, infill_axis: str = 'y') -> List[dict[str, Union[List[Point], Point]]]:
+    """
+    Generate a solid layer inside the enclosed base shape using a linear infill pattern that fits inside a complex shape.
+
+    Args:
+        baseShape (dict[str, List[Point]]): The closed base shape represented as a dictionary with the key 'shape' and a list of Point objects.
+        extrusion_width (float): The width of the extrusion in millimeters, used as the spacing between infill lines.
+        infill_axis (str): Axis along which to generate infill lines, either 'x' or 'y'. Default is 'y'.
+
+    Returns:
+        List[Dict[str, Union[List[Point], Point]]]: A list containing dictionaries with either a 'shape' key or 'moveWithNoExtrusion' key.
+                                                     Each 'shape' key contains a list of Point objects representing the infill pattern.
+                                                     Each 'moveWithNoExtrusion' key contains a Point object for a non-extruding move.
+    """
+    # Extract points from baseShape
+    shape_points = baseShape['shape']
+
+    # Calculate the bounding box of the shape, expanding by half the extrusion width to ensure complete fill
+    min_x = min(point.x for point in shape_points) - (extrusion_width / 2)
+    max_x = max(point.x for point in shape_points) + (extrusion_width / 2)
+    min_y = min(point.y for point in shape_points) - (extrusion_width / 2)
+    max_y = max(point.y for point in shape_points) + (extrusion_width / 2)
+
+    # Initialize list to hold the infill points and the move commands
+    infill_commands = []
+
+    # Generate infill based on the specified axis
+    if infill_axis == 'y':
+        # Generate y values for the infill lines using a for loop with an extrusion width step
+        values = [min_y + i * extrusion_width for i in range(int((max_y - min_y) / extrusion_width) + 1)]
+
+        # Create parallel lines along y-axis within the bounding box, spaced according to 'extrusion_width'
+        for i, current_y in enumerate(values):
+            start_point = Point(x=min_x, y=current_y, z=0)
+            end_point = Point(x=max_x, y=current_y, z=0)
+
+            # Find intersections between the line and the boundary of the shape
+            intersections = findIntersectionsWithShape(shape_points, start_point, end_point)
+
+            # Sort intersections by x to determine segments within the shape
+            intersections.sort(key=lambda p: p.x)
+
+            # Use the even-odd rule to add segments inside the shape
+            for j in range(0, len(intersections) - 1, 2):
+                p1 = intersections[j]
+                p2 = intersections[j + 1]
+
+                # Create a segment between each pair of intersections
+                infill_commands.append({'shape': [p1, p2]})
+
+                # Add a moveWithNoExtrusion command to move to the start of the next segment without extruding
+                if j + 2 < len(intersections):
+                    move_to_next_start = moveWithNoExtrusion(intersections[j + 2])
+                    infill_commands.append(move_to_next_start)
+
+            # If not the last line, add a moveWithNoExtrusion to the start of the next line
+            if i < len(values) - 1:
+                move_to_next_start = moveWithNoExtrusion(Point(x=min_x, y=values[i + 1], z=0))
+                infill_commands.append(move_to_next_start)
+
+    elif infill_axis == 'x':
+        # Generate x values for the infill lines using a for loop with an extrusion width step
+        values = [min_x + i * extrusion_width for i in range(int((max_x - min_x) / extrusion_width) + 1)]
+
+        # Create parallel lines along x-axis within the bounding box, spaced according to 'extrusion_width'
+        for i, current_x in enumerate(values):
+            start_point = Point(x=current_x, y=min_y, z=0)
+            end_point = Point(x=current_x, y=max_y, z=0)
+
+            # Find intersections between the line and the boundary of the shape
+            intersections = findIntersectionsWithShape(shape_points, start_point, end_point)
+
+            # Sort intersections by y to determine segments within the shape
+            intersections.sort(key=lambda p: p.y)
+
+            # Use the even-odd rule to add segments inside the shape
+            for j in range(0, len(intersections) - 1, 2):
+                p1 = intersections[j]
+                p2 = intersections[j + 1]
+
+                # Create a segment between each pair of intersections
+                infill_commands.append({'shape': [p1, p2]})
+
+                # Add a moveWithNoExtrusion command to move to the start of the next segment without extruding
+                if j + 2 < len(intersections):
+                    move_to_next_start = moveWithNoExtrusion(intersections[j + 2])
+                    infill_commands.append(move_to_next_start)
+
+            # If not the last line, add a moveWithNoExtrusion to the start of the next line
+            if i < len(values) - 1:
+                move_to_next_start = moveWithNoExtrusion(Point(x=values[i + 1], y=min_y, z=0))
+                infill_commands.append(move_to_next_start)
+
+    return infill_commands
+
 
 # Required supporting function for intersection calculations
 def findIntersectionsWithShape(shape_points: List[Point], start: Point, end: Point) -> List[Point]:
