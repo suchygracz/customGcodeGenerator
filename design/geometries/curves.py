@@ -58,6 +58,60 @@ def sinusoidalWave(
     return points
 
 @geometryDecorator
+def cosineWave(
+        startPoint: Point,
+        direction_polar: float,
+        amplitude: float,
+        periodLength: float,
+        periods: int,
+        segmentsPerPeriod: int = 50,
+        extraHalfPeriod: bool = False,
+        phaseShift: float = 0,
+) -> List[Point]:
+    """
+    Generate a cosine wave in Cartesian coordinates using polar coordinates for rotation.
+
+    Parameters:
+    - startPoint (Point): The starting point of the cosine wave.
+    - direction_polar (float): The polar angle in radians that determines the direction of the wave.
+    - amplitude (float): The amplitude of the wave.
+    - periodLength (float): The length of each period of the wave.
+    - periods (int): The number of periods in the wave.
+    - segmentsPerPeriod (int): The number of line segments per period. Defaults to 50.
+    - extraHalfPeriod (bool): Whether to add an extra half period. Defaults to False.
+    - phaseShift (float): The phase shift of the wave. Defaults to 0.
+
+    Returns:
+    - List[Point]: Points representing the cosine wave.
+    """
+    # Calculate total number of steps
+    totalSegments = periods * segmentsPerPeriod
+    if extraHalfPeriod:
+        totalSegments += int(segmentsPerPeriod / 2)
+
+    # Generate cosine wave points
+    points = []
+    # Starting with a phase shift of tau / 4 (which equals pi/2) to start at the peak
+    phaseShift += tau / 2
+
+    for step in range(totalSegments + 1):  # +1 to include the last point
+        # Compute axis distance and cosine amplitude
+        axis_distance = step * periodLength / segmentsPerPeriod
+        cosine_amplitude = (-1) * amplitude * cos((step / segmentsPerPeriod) * tau + phaseShift)
+
+        # Use polar coordinates to compute the point
+        polar_point = PolarPoint(radious=axis_distance, angle=direction_polar)
+        cartesian_point = polarToPoint(startPoint, polar_point.radious, polar_point.angle)
+
+        # Adjust the y-coordinate for the cosine wave amplitude
+        cartesian_point.y += cosine_amplitude
+
+        # Append the point
+        points.append(cartesian_point)
+
+    return points
+
+@geometryDecorator
 def squareWave(
         startPoint: Point,
         direction_polar: float,

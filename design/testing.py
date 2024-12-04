@@ -1,8 +1,9 @@
 from numpy.ma.core import shape
+from manim import *
 
 from design.geometricTools.extraTools import nonPlanarVase, vaseMode, solidLayerInfill
 from design.geometricTools.vector import Vector
-from design.geometries.curves import sinusoidalWave, squareWave, tringleWave, cubic_bezier_curve, bezier_curve_de_casteljau, cardinal_spline, nurbs_curve
+from design.geometries.curves import sinusoidalWave, cosineWave, squareWave, tringleWave, cubic_bezier_curve, bezier_curve_de_casteljau, cardinal_spline, nurbs_curve
 from design.geometries.shapes import varyingArc, spiral, helix, polar_function_1, polar_function_2, generatePolarShape, polygon, circle, rectangle, square, arcXY
 from design.layer import Layer
 from transform.transformations import pointsIndiciesToStrRepresentation, parseStepsToGcode
@@ -82,10 +83,10 @@ lista_instrukcji = []
 listOfPoints = []
 
 
-polarShape2 = generatePolarShape(Point(x = 0, y = 0, z = 0), polar_function_2, start_angle=0, end_angle=10 * pi, segments=300)
+#polarShape2 = generatePolarShape(Point(x = 0, y = 0, z = 0), polar_function_2, start_angle=0, end_angle=10 * pi, segments=300)
 #rotated = rotate(polarShape, 1, 'z', True)
 
-cardinalS = cardinal_spline([Point(x = 0, y = 0, z = 0), Point(x = 10, y = 10, z = 0), Point(x = 20, y = 0, z = 0), Point(x = 30, y = 10, z = 0), Point(x = 40, y = 0, z = 0)], 0, 1000)
+#cardinalS = cardinal_spline([Point(x = 0, y = 0, z = 0), Point(x = 10, y = 10, z = 0), Point(x = 20, y = 0, z = 0), Point(x = 30, y = 10, z = 0), Point(x = 40, y = 0, z = 0)], 0, 1000)
 '''
 #simple low res circle
 circle = circle(Point(x = 0, y = 0, z = 0), 30, 8)
@@ -122,7 +123,7 @@ knot_vector = [0, 0, 0, 1, 2, 4, 7, 9, 9, 9]
 
 
 # Generate the NURBS curve points using the extended control points
-nurbs_points = nurbs_curve(control_points, weights, degree, 122)
+#nurbs_points = nurbs_curve(control_points, weights, degree, 122)
 
 
 
@@ -223,14 +224,14 @@ okrąg = circle(Point(x=0, y=0, z=0), 75, 1000)
 
 
 
-sineWave = sinusoidalWave(Point(x=0, y=0, z=0), 0, 5, 10, 10, 100)
+myWave = sinusoidalWave(Point(x=0, y=0, z=0), 0, 5, 10, 10, 100)
 for i in range(0, 1000):
-    okrąg['shape'][i].z += sineWave['shape'][i].y
+    okrąg['shape'][i].z += myWave['shape'][i].y
 
 secondCircle = move(okrąg, Vector(x=0, y=0, z=10.2))
 secondRotatedCircle = rotate(secondCircle, 0.1*pi, 'z', True)
 for i in range(0, 1000):
-    secondRotatedCircle['shape'][i].z += sineWave['shape'][i].y
+    secondRotatedCircle['shape'][i].z += myWave['shape'][i].y
 
 lista_instrukcji.append(okrąg) 
 lista_instrukcji.append(secondRotatedCircle)
@@ -249,35 +250,48 @@ for i in range(0, 10):
 #move(fRectangle, Vector(x=0, y=0, z=10))
 #sRectangle = rotate(fRectangle, rotationAngle, 'z', False)
 
+okrąg = circle(Point(x=0, y=0, z=0), 75, 1000)
 
-'''
-squareWaveee = squareWave(Point(x=0, y=0, z=0), 0, 5, 10, 10,100)
+#squareWaveee = squareWave(Point(x=0, y=0, z=0), 0, 5, 10, 10,100)
 
-sineWave = sinusoidalWave(Point(x=0, y=0, z=0), 0, 5, 10, 10, 100)
+#myWave = sinusoidalWave(Point(x=0, y=0, z=0), 0, 5, 10, 10, 100)
+
+myWave = cosineWave(Point(x=0, y=0, z=0), 0, 5, 10, 10, 100)
+
+
+
+lista_instrukcji.append(myWave)
+
 for i in range(0, 1000):
-    okrąg['shape'][i].z += sineWave['shape'][i].y
+    okrąg['shape'][i].z += myWave['shape'][i].y
+
+print('points: \n')
+print(okrąg['shape'])
+print('\n points end')
 
 secondCircle = move(okrąg, Vector(x=0, y=0, z=10.2))
 secondRotatedCircle = rotate(secondCircle, 0.1*pi, 'z', True)
 for i in range(0, 1000):
-    secondRotatedCircle['shape'][i].z += sineWave['shape'][i].y
+    secondRotatedCircle['shape'][i].z += myWave['shape'][i].y
 
 lista_instrukcji.append(okrąg) 
 lista_instrukcji.append(secondRotatedCircle)
 
 for i in range(0, 10):
+    #lista_instrukcji.append(stationaryExtrusion(5,5))
     lista_instrukcji.append(move(okrąg, Vector(x=0, y=0, z=20.4*i)))
+    #lista_instrukcji.append(retraction(5))
     lista_instrukcji.append(move(secondRotatedCircle, Vector(x=0, y=0, z=20.4*i)))
+
+
 '''
-
-
 mcircle = circle(Point(x = 0, y = 0, z = 0), 30, 1000)
 circinfill = solidLayerInfill(mcircle, 0.6)
 vase = vaseMode(mcircle, 120, 0.6, 0.2)
 listOfPoints = [mcircle]
 listOfPoints.extend(circinfill)
 listOfPoints.append(vase)
-
+'''
 
 
 '''
@@ -295,7 +309,9 @@ listOfPoints.append(vase)
 
 #visualize(lista_instrukcji)
 #visualize(listOfPoints)
-parseStepsToGcode(lista_instrukcji, 'outputt.gcode', [0.4, 0.2], hotendTemp=200, bedTemp=60)
+#parseStepsToGcode(lista_instrukcji, 'outputt.gcode', [0.4, 0.2], hotendTemp=200, bedTemp=60)
+
+
 
 
 
